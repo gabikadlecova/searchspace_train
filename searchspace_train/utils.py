@@ -1,10 +1,12 @@
+import yaml
 from typing import List
 
 import pandas as pd
 
 
 def load_config(config_path: str):
-    pass
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
 
 
 def concat_datasets(data_paths: List[str], *args, **kwargs):
