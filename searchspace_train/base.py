@@ -3,7 +3,7 @@ import torch
 
 
 class TrainedNetwork:
-    def __init__(self, hash, checkpoint_path, data_path, data_mode='pickle'):
+    def __init__(self, hash, checkpoint_path, data_path, data_mode='torch'):
         self.hash = hash
         self.checkpoint_path = checkpoint_path
         self.data_path = data_path
