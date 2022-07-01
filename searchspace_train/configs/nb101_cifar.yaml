@@ -1,0 +1,9 @@
+dataset:
+  name: CIFAR-10
+  args:
+    batch_size: 32
+    validation_size: 1000
+    set_global_seed: true
+
+train:
+  epochs: 12
