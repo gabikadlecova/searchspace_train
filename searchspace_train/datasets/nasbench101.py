@@ -1,8 +1,10 @@
 import os
 
+import pickle
 import pandas as pd
 import torch.jit
 
+from nasbench import api
 from nasbench_pytorch.datasets.cifar10 import prepare_dataset
 from nasbench_pytorch.trainer import train, test
 from nasbench_pytorch.model import Network as NBNetwork
@@ -23,7 +25,7 @@ class PretrainedNB101:
             self.dataset = dataset
             self.data_name = None
         else:
-            self.data_name = config['dataset']['name']
+            self.data_name = config['dataset']['name'].lower()
             data_args = config['dataset'].get('args', {})
 
             if self.data_name in ['cifar-10', 'cifar_10', 'cifar10', 'cifar']:
@@ -93,3 +95,13 @@ def get_net_from_hash(nb, net_hash):
     adjacency = m[0]['module_adjacency']
 
     return ops, adjacency
+
+
+def load_nasbench(nb_path):
+    if nb_path.endswith('.tfrecord'):
+        return api.NASBench(nb_path)
+    elif nb_path.endswith('pickle'):
+        with open(nb_path, 'rb') as f:
+            return pickle.load(f)
+    else:
+        raise ValueError(f"Invalid path to load, supported are .tfrecord and .pickle: {nb_path}")

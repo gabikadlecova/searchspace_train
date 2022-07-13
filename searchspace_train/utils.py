@@ -10,7 +10,7 @@ def load_config(config_path: str):
 
 
 def concat_datasets(data_paths: List[str], *args, **kwargs):
-    dfs = [pd.DataFrame(path, *args, **kwargs) for path in data_paths]
+    dfs = [pd.read_csv(path, index_col=0, *args, **kwargs) for path in data_paths]
     return pd.concat(dfs)
 
 
