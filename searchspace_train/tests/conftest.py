@@ -10,5 +10,10 @@ def data_dir():
 
 
 @pytest.fixture
+def config_path(data_dir):
+    return os.path.join(data_dir, 'config.yaml')
+
+
+@pytest.fixture
 def nb_path(data_dir):
     return os.path.join(data_dir, 'nb_short.pickle')

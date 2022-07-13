@@ -4,6 +4,7 @@ dataset:
     batch_size: 32
     validation_size: 1000
     set_global_seed: true
+    random_state: 1
 
 train:
   epochs: 12

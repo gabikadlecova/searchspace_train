@@ -17,7 +17,7 @@ class PretrainedNB101:
     def __init__(self, nasbench, device=None, net_data=None, dataset=None, config=None, verbose=True):
         self.nasbench = nasbench
         self.device = device
-        self.config = load_config(config)
+        self.config = load_config(config) if config is not None else None
 
         assert dataset is not None or config is not None, "Must provide either dataset or config."
 
@@ -25,8 +25,8 @@ class PretrainedNB101:
             self.dataset = dataset
             self.data_name = None
         else:
-            self.data_name = config['dataset']['name'].lower()
-            data_args = config['dataset'].get('args', {})
+            self.data_name = self.config['dataset']['name'].lower()
+            data_args = self.config['dataset'].get('args', {})
 
             if self.data_name in ['cifar-10', 'cifar_10', 'cifar10', 'cifar']:
                 self.dataset = prepare_dataset(**data_args)

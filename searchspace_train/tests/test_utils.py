@@ -25,8 +25,8 @@ def test_concat_datasets(data_dir):
     assert data.equals(data_ref)
 
 
-def test_load_config(data_dir):
-    cfg = load_config(os.path.join(data_dir, 'config.yaml'))
+def test_load_config(config_path):
+    cfg = load_config(config_path)
 
     assert 'dataset' in cfg
     assert cfg['dataset']['name'] == 'CIFAR-10'
