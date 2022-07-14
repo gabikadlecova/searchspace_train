@@ -32,6 +32,7 @@ jobs:
         python -m pip install -e git+https://github.com/gabrielasuchopar/nasbench.git#egg=nasbench
         python -m pip install torch torchvision
         python -m pip install -e .
+        python -m pip install coveralls
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -40,8 +41,10 @@ jobs:
         flake8 . --exclude ./src/* --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest searchspace_train/tests/
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        coverage run --source searchspace_train --m pytest --omit ./src/*
+    - env:
+        COVERALLS_PARALLEL: true
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Submit to coveralls
+      run: |
+        coveralls

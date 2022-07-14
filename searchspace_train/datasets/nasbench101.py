@@ -56,6 +56,7 @@ class PretrainedNB101:
 
         data_print = f' on {self.data_name}' if self.data_name is not None else ''
         save_dir = '.' if save_dir is None else save_dir
+
         def checkpoint_func(n, m, _):
             return _save_net(save_dir, f"{net_hash}_e", n, m)  # checkpoint indexed by epoch num
 
