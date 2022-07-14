@@ -3,6 +3,7 @@ import pickle
 
 import nasbench.api
 import numpy as np
+import pandas as pd
 import pytest
 from unittest import mock
 from unittest.mock import mock_open
@@ -74,11 +75,30 @@ def test_pretrainednb101_no_dataset_config(data_dir):
         PretrainedNB101("nb")
 
 
+def train_net(nb_path, config_path, dataset, net_hash, data_dir, as_basename=True):
+    nb = load_nasbench(nb_path)
+    pnb = PretrainedNB101(nb, config=config_path, dataset=dataset, verbose=False, as_basename=as_basename)
+    net = pnb.train(net_hash, save_dir=data_dir)
+    return pnb, net
+
+
+def are_nets_same(pnb, net, net_saved):
+    train_data = pnb.dataset['train']
+    for batch, _ in train_data:
+        out = net(batch)
+        out_saved = net_saved(batch)
+        return torch.equal(out, out_saved)
+
+
+def cleanup(pnb, net_hash, data_dir):
+    data = pnb.net_data.loc[net_hash]
+    os.remove(os.path.join(data_dir, data['net_path']))
+    os.remove(os.path.join(data_dir, data['data_path']))
+
+
 def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash, data_dir):
     # train
-    nb = load_nasbench(nb_path)
-    pnb = PretrainedNB101(nb, config=config_path, dataset=small_cifar, verbose=False)
-    net = pnb.train(net_hash, save_dir=data_dir)
+    pnb, net = train_net(nb_path, config_path, small_cifar, net_hash, data_dir, as_basename=False)
 
     # check if saved correctly
     assert net_hash in pnb.net_data.index
@@ -94,12 +114,7 @@ def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash,
     net_saved = torch.jit.load(data['net_path'])
 
     # check saved checkpoint
-    train_data = pnb.dataset['train']
-    for batch, _ in train_data:
-        out = net(batch)
-        out_saved = net_saved(batch)
-        assert torch.equal(out, out_saved)
-        break
+    assert are_nets_same(pnb, net, net_saved)
 
     # check saved metrics
     metrics = torch.load(data['data_path'])
@@ -116,8 +131,44 @@ def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash,
     assert isinstance(metrics['test_accuracy'], float) # evaluated once
     assert isinstance(metrics['test_loss'], float)
 
-    os.remove(data['net_path'])
-    os.remove(data['data_path'])
+    cleanup(pnb, net_hash, data_dir)
+
+
+def test_pretrainednb101_dataset_save(nb_path, config_path, small_cifar, net_hash, data_dir):
+    pnb, _ = train_net(nb_path, config_path, small_cifar, net_hash, data_dir)
+
+    save_path = os.path.join(data_dir, 'net_dataset.csv')
+    pnb.save_dataset(save_path)
+
+    saved = pd.read_csv(save_path, index_col=0)
+    ref = pd.read_csv(os.path.join(data_dir, 'saved_dataset.csv'), index_col=0)
+    assert saved.equals(ref)
+
+    assert net_hash in saved.index
+
+    cleanup(pnb, net_hash, data_dir)
+    os.remove(save_path)
+
+
+def test_pretrainednb101_load_dataset_and_net(data_dir, config_path, small_cifar, net_hash):
+    saved = pd.read_csv(os.path.join(data_dir, 'saved_dataset.csv'), index_col=0)
+    pnb = PretrainedNB101("nb", config=config_path, dataset=small_cifar, verbose=False, as_basename=True,
+                          net_data=saved)
+    pnb.get_network(net_hash, dir_path=data_dir)
+
+
+def test_pretrainednb101_load_net_data(nb_path, config_path, data_dir, small_cifar, net_hash):
+    # train
+    pnb, net_trained = train_net(nb_path, config_path, small_cifar, net_hash, data_dir)
+    net = pnb.get_network(net_hash, dir_path=data_dir)
+
+    data = net.load_data()
+    checkpoint = net.load_checkpoint()
+    assert isinstance(data, dict)
+    assert isinstance(checkpoint, torch.nn.Module)
+    assert are_nets_same(pnb, checkpoint, net_trained)
+
+    cleanup(pnb, net_hash, data_dir)
 
 
 @mock.patch("builtins.open", new_callable=mock_open, read_data="")

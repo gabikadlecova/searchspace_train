@@ -14,7 +14,9 @@ from searchspace_train.utils import load_config, print_verbose
 
 
 class PretrainedNB101:
-    def __init__(self, nasbench, device=None, net_data=None, dataset=None, config=None, verbose=True):
+    def __init__(self, nasbench, device=None, net_data=None, dataset=None, config=None,
+                 verbose=True, as_basename=False):
+
         self.nasbench = nasbench
         self.device = device
 
@@ -38,10 +40,11 @@ class PretrainedNB101:
 
         self.net_data = pd.DataFrame(columns=['net_path', 'data_path']) if net_data is None else net_data
         self.verbose = verbose
+        self.as_basename = as_basename
 
     def save_dataset(self, save_path):
         print_verbose(f"Saving to {save_path}...", self.verbose)
-        self.net_data.to_csv(save_path, index=False)
+        self.net_data.to_csv(save_path)
         print_verbose("Saved.", self.verbose)
 
 
@@ -70,14 +73,19 @@ class PretrainedNB101:
 
         # save network
         print_verbose(f"Saving trained network to directory {save_dir}.", self.verbose)
-        npath, dpath = _save_net(save_dir, net_hash, net, metrics)
+        npath, dpath = _save_net(save_dir, net_hash, net, metrics, as_basename=self.as_basename)
         self.net_data.loc[net_hash] = {'net_path': npath, 'data_path': dpath}
 
         return net
 
-    def get_network(self, net_hash, data_mode='torch'):
-        net_info = self.net_data.iloc[net_hash]
-        return TrainedNetwork(net_hash, net_info['net_path'], net_info['data_path'], data_mode=data_mode)
+    def get_network(self, net_hash, dir_path=None):
+        net_info = self.net_data.loc[net_hash]
+
+        net_path, data_path =  net_info['net_path'], net_info['data_path']
+        net_path = net_path if dir_path is None else os.path.join(dir_path, net_path)
+        data_path = data_path if dir_path is None else os.path.join(dir_path, data_path)
+
+        return TrainedNetwork(net_hash, net_path, data_path)
 
 
 def _get_save_names(save_dir, net_hash):
@@ -86,11 +94,17 @@ def _get_save_names(save_dir, net_hash):
     return net_path, data_path
 
 
-def _save_net(save_dir, net_hash, net, metrics):
+def _save_net(save_dir, net_hash, net, metrics, as_basename=False):
     net_path, data_path = _get_save_names(save_dir, net_hash)
+
     net = torch.jit.script(net)
     net.save(net_path)
     torch.save(metrics, data_path)
+
+    if as_basename:
+        net_path = os.path.basename(net_path)
+        data_path = os.path.basename(data_path)
+
     return net_path, data_path
 
 
