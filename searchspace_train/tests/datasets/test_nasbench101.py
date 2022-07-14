@@ -29,17 +29,18 @@ def test_get_net_from_hash(nb_path, net_hash):
     res = load_nasbench(nb_path)
     ops, adj = get_net_from_hash(res, net_hash)
 
-    ops_true = ['input', 'conv3x3-bn-relu', 'maxpool3x3', 'conv3x3-bn-relu','conv3x3-bn-relu', 'conv1x1-bn-relu',
+    ops_true = ['input', 'conv3x3-bn-relu', 'maxpool3x3', 'conv3x3-bn-relu', 'conv3x3-bn-relu', 'conv1x1-bn-relu',
                 'output']
-    adj_true = np.array(
-       [[0, 1, 0, 0, 1, 1, 0],
-       [0, 0, 1, 0, 0, 0, 0],
-       [0, 0, 0, 1, 0, 0, 1],
-       [0, 0, 0, 0, 0, 1, 0],
-       [0, 0, 0, 0, 0, 1, 0],
-       [0, 0, 0, 0, 0, 0, 1],
-       [0, 0, 0, 0, 0, 0, 0]]
-    )
+
+    adj_true = np.array([
+        [0, 1, 0, 0, 1, 1, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0, 1],
+        [0, 0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 0]
+    ])
 
     assert ops == ops_true
     assert (adj == adj_true).all()
@@ -128,7 +129,7 @@ def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash,
     config = load_config(config_path)
     data_len = config['train']['num_epochs']
     assert all([len(metrics[k]) == data_len for k in keys if 'train' in k or 'val' in k])  # same number of epochs
-    assert isinstance(metrics['test_accuracy'], float) # evaluated once
+    assert isinstance(metrics['test_accuracy'], float)  # evaluated once
     assert isinstance(metrics['test_loss'], float)
 
     cleanup(pnb, net_hash, data_dir)

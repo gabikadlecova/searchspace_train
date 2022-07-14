@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import pytest
 
 from searchspace_train.utils import print_verbose, concat_datasets, load_config
 

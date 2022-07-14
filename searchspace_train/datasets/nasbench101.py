@@ -47,7 +47,6 @@ class PretrainedNB101:
         self.net_data.to_csv(save_path)
         print_verbose("Saved.", self.verbose)
 
-
     def train(self, net_hash, save_dir=None):
         ops, adjacency = get_net_from_hash(self.nasbench, net_hash)
         net = NBNetwork((adjacency, ops))
@@ -57,7 +56,8 @@ class PretrainedNB101:
 
         data_print = f' on {self.data_name}' if self.data_name is not None else ''
         save_dir = '.' if save_dir is None else save_dir
-        checkpoint_func = lambda n, m, e: _save_net(save_dir, f"{net_hash}_e", n, m)  # checkpoint indexed by epoch num
+        def checkpoint_func(n, m, _):
+            return _save_net(save_dir, f"{net_hash}_e", n, m)  # checkpoint indexed by epoch num
 
         # train
         print_verbose(f"Train network {net_hash}{data_print}.", self.verbose)
@@ -81,7 +81,7 @@ class PretrainedNB101:
     def get_network(self, net_hash, dir_path=None):
         net_info = self.net_data.loc[net_hash]
 
-        net_path, data_path =  net_info['net_path'], net_info['data_path']
+        net_path, data_path = net_info['net_path'], net_info['data_path']
         net_path = net_path if dir_path is None else os.path.join(dir_path, net_path)
         data_path = data_path if dir_path is None else os.path.join(dir_path, data_path)
 
