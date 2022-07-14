@@ -1,5 +1,5 @@
 dataset:
-  name: CIFAR-10
+  name: something
   args:
     batch_size: 32
     validation_size: 1000
@@ -7,4 +7,4 @@ dataset:
     random_state: 1
 
 train:
-  num_epochs: 12
+  num_epochs: 1

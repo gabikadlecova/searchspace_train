@@ -6,7 +6,11 @@ import numpy as np
 import pytest
 from unittest import mock
 from unittest.mock import mock_open
+
+import torch.jit
+
 from searchspace_train.datasets.nasbench101 import load_nasbench, get_net_from_hash, PretrainedNB101
+from searchspace_train.utils import load_config
 
 
 @pytest.fixture
@@ -52,12 +56,68 @@ def test_pretrainednb101_init_with_dataset(small_cifar):
 def test_pretrainednb101_init_with_config(small_cifar, config_path):
     with mock.patch('searchspace_train.datasets.nasbench101.prepare_dataset', lambda *args, **kwargs: small_cifar):
         pnb = PretrainedNB101("nb", config=config_path)
-    assert pnb.dataset is not None
+        assert pnb.dataset is not None
+
+        config = load_config(config_path)
+        pnb = PretrainedNB101("nb", config=config)
+        assert pnb.dataset is not None
+
+
+def test_pretrainednb101_init_invalid_config(data_dir):
+    bad_config = os.path.join(data_dir, 'bad_config.yaml')
+    with pytest.raises(ValueError):
+        PretrainedNB101("nb", config=bad_config)
 
 
 def test_pretrainednb101_no_dataset_config(data_dir):
     with pytest.raises(AssertionError):
         PretrainedNB101("nb")
+
+
+def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash, data_dir):
+    # train
+    nb = load_nasbench(nb_path)
+    pnb = PretrainedNB101(nb, config=config_path, dataset=small_cifar, verbose=False)
+    net = pnb.train(net_hash, save_dir=data_dir)
+
+    # check if saved correctly
+    assert net_hash in pnb.net_data.index
+    data = pnb.net_data.loc[net_hash]
+    assert 'net_path' in data, "Net path missing in dataset."
+    assert 'data_path' in data, "Data path missing in dataset"
+    assert data['net_path'] == os.path.join(data_dir, f'{net_hash}_script.pt')
+    assert data['data_path'] == os.path.join(data_dir, f'{net_hash}_data.pt')
+
+    assert os.path.exists(data['net_path']), f"Network checkpoint was not saved: {data['net_path']}"
+    assert os.path.exists(data['data_path']), f"Training data was not saved: {data['data_path']}"
+
+    net_saved = torch.jit.load(data['net_path'])
+
+    # check saved checkpoint
+    train_data = pnb.dataset['train']
+    for batch, _ in train_data:
+        out = net(batch)
+        out_saved = net_saved(batch)
+        assert torch.equal(out, out_saved)
+        break
+
+    # check saved metrics
+    metrics = torch.load(data['data_path'])
+
+    # check if sizes okay
+    keys = ['train', 'val', 'test']
+    keys = [f'{k}_loss' for k in keys] + [f'{k}_accuracy' for k in keys]
+    for k in keys:
+        assert k in metrics
+
+    config = load_config(config_path)
+    data_len = config['train']['num_epochs']
+    assert all([len(metrics[k]) == data_len for k in keys if 'train' in k or 'val' in k])  # same number of epochs
+    assert isinstance(metrics['test_accuracy'], float) # evaluated once
+    assert isinstance(metrics['test_loss'], float)
+
+    os.remove(data['net_path'])
+    os.remove(data['data_path'])
 
 
 @mock.patch("builtins.open", new_callable=mock_open, read_data="")

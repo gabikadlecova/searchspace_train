@@ -7,4 +7,4 @@ dataset:
     random_state: 1
 
 train:
-  epochs: 1
+  num_epochs: 1

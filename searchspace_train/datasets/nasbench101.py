@@ -17,7 +17,10 @@ class PretrainedNB101:
     def __init__(self, nasbench, device=None, net_data=None, dataset=None, config=None, verbose=True):
         self.nasbench = nasbench
         self.device = device
-        self.config = load_config(config) if config is not None else None
+
+        self.config = config if config is not None else None
+        if isinstance(config, str):
+            self.config = load_config(config)
 
         assert dataset is not None or config is not None, "Must provide either dataset or config."
 
@@ -47,7 +50,7 @@ class PretrainedNB101:
         net = NBNetwork((adjacency, ops))
 
         train_loader, test_loader = self.dataset['train'], self.dataset['test']
-        valid_loader = self.dataset.get(['validation'])
+        valid_loader = self.dataset.get('validation')
 
         data_print = f' on {self.data_name}' if self.data_name is not None else ''
         save_dir = '.' if save_dir is None else save_dir
@@ -68,7 +71,9 @@ class PretrainedNB101:
         # save network
         print_verbose(f"Saving trained network to directory {save_dir}.", self.verbose)
         npath, dpath = _save_net(save_dir, net_hash, net, metrics)
-        self.net_data.iloc[net_hash] = {'net_path': npath, 'data_path': dpath}
+        self.net_data.loc[net_hash] = {'net_path': npath, 'data_path': dpath}
+
+        return net
 
     def get_network(self, net_hash, data_mode='torch'):
         net_info = self.net_data.iloc[net_hash]
