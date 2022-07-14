@@ -95,6 +95,8 @@ def cleanup(pnb, net_hash, data_dir):
     data = pnb.net_data.loc[net_hash]
     os.remove(os.path.join(data_dir, data['net_path']))
     os.remove(os.path.join(data_dir, data['data_path']))
+    os.remove(os.path.join(data_dir, f"{net_hash}_1_script.pt"))
+    os.remove(os.path.join(data_dir, f"{net_hash}_1_data.pt"))
 
 
 def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash, data_dir):
@@ -109,6 +111,7 @@ def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash,
     assert data['net_path'] == os.path.join(data_dir, f'{net_hash}_script.pt')
     assert data['data_path'] == os.path.join(data_dir, f'{net_hash}_data.pt')
 
+    assert os.path.exists(os.path.join(data_dir, f'{net_hash}_1_script.pt'))  # periodic checkpoint
     assert os.path.exists(data['net_path']), f"Network checkpoint was not saved: {data['net_path']}"
     assert os.path.exists(data['data_path']), f"Training data was not saved: {data['data_path']}"
 

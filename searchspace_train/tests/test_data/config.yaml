@@ -8,3 +8,4 @@ dataset:
 
 train:
   num_epochs: 1
+  checkpoint_every_k: 1
