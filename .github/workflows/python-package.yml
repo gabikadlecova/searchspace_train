@@ -41,7 +41,7 @@ jobs:
         flake8 . --exclude ./src/* --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        coverage run --omit ./src/* --source searchspace_train --m pytest
+        coverage run --omit "src/*,searchspace_train/tests/*" --m pytest searchspace_train/tests/
     - env:
         COVERALLS_PARALLEL: true
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
