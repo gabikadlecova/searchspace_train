@@ -1,5 +1,5 @@
 # searchspace_train
-[![Coverage Status](https://coveralls.io/repos/github/gabrielasuchopar/searchspace_train/badge.svg?branch=main)](https://coveralls.io/github/gabrielasuchopar/searchspace_train?branch=main)
+![Coveralls](https://img.shields.io/coveralls/github/gabrielasuchopar/searchspace_train)
 
 Collection of training procedures for different search spaces
 
