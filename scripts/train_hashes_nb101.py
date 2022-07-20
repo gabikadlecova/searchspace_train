@@ -36,5 +36,5 @@ def run(save_dir, hash_csv, dataset_name, nasbench, device, config, verbose, as_
     pnb.save_dataset(save_path)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     run()

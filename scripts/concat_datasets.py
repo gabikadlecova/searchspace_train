@@ -15,5 +15,5 @@ def run(dirs, out):
     dataset.to_csv(out)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     run()
