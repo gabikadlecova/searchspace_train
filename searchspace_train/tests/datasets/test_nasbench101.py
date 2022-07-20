@@ -1,5 +1,4 @@
 import os.path
-import pickle
 
 import nasbench.api
 import numpy as np
@@ -17,12 +16,6 @@ from searchspace_train.utils import load_config
 @pytest.fixture
 def net_hash():
     return '00005c142e6f48ac74fdcf73e3439874'
-
-
-@pytest.fixture
-def small_cifar(data_dir):
-    with open(os.path.join(data_dir, 'cifar_small.pickle'), 'rb') as f:
-        return pickle.load(f)
 
 
 def test_get_net_from_hash(nb_path, net_hash):

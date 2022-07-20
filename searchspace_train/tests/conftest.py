@@ -1,4 +1,6 @@
 import os
+import pickle
+
 import pytest
 
 
@@ -17,3 +19,9 @@ def config_path(data_dir):
 @pytest.fixture
 def nb_path(data_dir):
     return os.path.join(data_dir, 'nb_short.pickle')
+
+
+@pytest.fixture
+def small_cifar(data_dir):
+    with open(os.path.join(data_dir, 'cifar_small.pickle'), 'rb') as f:
+        return pickle.load(f)

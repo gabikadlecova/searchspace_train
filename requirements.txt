@@ -1,3 +1,4 @@
+click
 nasbench_pytorch
 pandas
 pyyaml

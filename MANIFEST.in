@@ -1,0 +1,2 @@
+include searchspace_train/configs/*.yaml
+include searchspace_train/tests/test_data/*
