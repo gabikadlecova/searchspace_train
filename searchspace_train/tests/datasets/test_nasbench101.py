@@ -154,6 +154,15 @@ def test_pretrainednb101_load_dataset_and_net(data_dir, config_path, small_cifar
     pnb.get_network(net_hash, dir_path=data_dir)
 
 
+
+def test_pretrainednb101_get_trained_hashes(data_dir, small_cifar, config_path):
+    saved = pd.read_csv(os.path.join(data_dir, 'nb_res.csv'), index_col=0)
+    pnb = PretrainedNB101("nb", config=config_path, dataset=small_cifar, verbose=False, as_basename=True,
+                          net_data=saved)
+    hash_list = pnb.get_trained_hashes()
+    assert hash_list == ['hash1', 'hash2']
+
+
 def test_pretrainednb101_load_net_data(nb_path, config_path, data_dir, small_cifar, net_hash):
     # train
     pnb, net_trained = train_net(nb_path, config_path, small_cifar, net_hash, data_dir)

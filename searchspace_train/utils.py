@@ -14,6 +14,6 @@ def concat_datasets(data_paths: List[str], *args, **kwargs):
     return pd.concat(dfs)
 
 
-def print_verbose(what, verbose, *args, **kwargs):
+def print_verbose(what: str, verbose: bool, *args, **kwargs):
     if verbose:
         print(what, *args, **kwargs)

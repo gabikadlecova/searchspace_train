@@ -1,6 +1,9 @@
 import os
 
 import pickle
+from typing import Optional, Union, List, Tuple
+
+import numpy as np
 import pandas as pd
 import torch.jit
 
@@ -9,13 +12,14 @@ from nasbench_pytorch.datasets.cifar10 import prepare_dataset
 from nasbench_pytorch.trainer import train, test
 from nasbench_pytorch.model import Network as NBNetwork
 
-from searchspace_train.base import TrainedNetwork
+from searchspace_train.base import TrainedNetwork, BaseDataset
 from searchspace_train.utils import load_config, print_verbose
 
 
-class PretrainedNB101:
-    def __init__(self, nasbench, device=None, net_data=None, dataset=None, config=None,
-                 verbose=True, as_basename=False):
+class PretrainedNB101(BaseDataset):
+    def __init__(self, nasbench: api.NASBench, device: Optional[str] = None, net_data: Optional[pd.DataFrame] = None,
+                 dataset: Union[str, torch.utils.data.DataLoader, None] = None, config: Optional[str, dict] = None,
+                 verbose: Optional[bool] = True, as_basename: Optional[bool] = False):
 
         self.nasbench = nasbench
         self.device = device
@@ -42,12 +46,15 @@ class PretrainedNB101:
         self.verbose = verbose
         self.as_basename = as_basename
 
-    def save_dataset(self, save_path):
+    def save_dataset(self, save_path: str):
         print_verbose(f"Saving to {save_path}...", self.verbose)
         self.net_data.to_csv(save_path)
         print_verbose("Saved.", self.verbose)
 
-    def train(self, net_hash, save_dir=None):
+    def get_trained_hashes(self) -> List[str]:
+        return self.net_data.index.tolist()
+
+    def train(self, net_hash: str, save_dir: Optional[str] = None):
         ops, adjacency = get_net_from_hash(self.nasbench, net_hash)
         net = NBNetwork((adjacency, ops))
 
@@ -79,7 +86,7 @@ class PretrainedNB101:
 
         return net
 
-    def get_network(self, net_hash, dir_path=None):
+    def get_network(self, net_hash: str, dir_path: Optional[str] = None) -> TrainedNetwork:
         net_info = self.net_data.loc[net_hash]
 
         net_path, data_path = net_info['net_path'], net_info['data_path']
@@ -109,7 +116,7 @@ def _save_net(save_dir, net_hash, net, metrics, as_basename=False):
     return net_path, data_path
 
 
-def get_net_from_hash(nb, net_hash):
+def get_net_from_hash(nb: api.NASBench, net_hash: str) -> Tuple[np.ndarray, np.ndarray]:
     m = nb.get_metrics_from_hash(net_hash)
     ops = m[0]['module_operations']
     adjacency = m[0]['module_adjacency']
@@ -117,7 +124,7 @@ def get_net_from_hash(nb, net_hash):
     return ops, adjacency
 
 
-def load_nasbench(nb_path):
+def load_nasbench(nb_path: str) -> api.NASBench:
     if nb_path.endswith('.tfrecord'):
         return api.NASBench(nb_path)
     elif nb_path.endswith('pickle'):
