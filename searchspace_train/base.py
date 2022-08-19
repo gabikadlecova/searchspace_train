@@ -36,5 +36,5 @@ def enumerate_trained_networks(dataset: BaseDataset, with_data: Optional[bool] =
         checkpoint = trained_net.load_checkpoint(device=device)
         if with_data:
             data = trained_net.load_data()
-            yield checkpoint, data
-        yield checkpoint
+            yield net_hash, checkpoint, data
+        yield net_hash, checkpoint
