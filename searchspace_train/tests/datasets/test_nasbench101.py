@@ -9,6 +9,7 @@ from unittest.mock import mock_open
 
 import torch.jit
 
+from base import enumerate_trained_networks
 from searchspace_train.datasets.nasbench101 import load_nasbench, get_net_from_hash, PretrainedNB101
 from searchspace_train.utils import load_config
 
@@ -201,3 +202,17 @@ def test_load_nasbench_pickle_real(nb_path):
     res = load_nasbench(nb_path)
 
     assert isinstance(res, nasbench.api.NASBench)
+
+
+def test_base_enumerate_trained_networks(nb_path, config_path, small_cifar, net_hash, data_dir):
+    nb = load_nasbench(nb_path)
+    pnb = PretrainedNB101(nb, config=config_path, dataset=small_cifar, verbose=False, as_basename=True)
+    net = pnb.train(net_hash, save_dir=data_dir)
+
+    for enum_hash in pnb.get_trained_hashes():
+        assert enum_hash == net_hash
+
+    for trained_net in enumerate_trained_networks(pnb, dir_path=data_dir):
+        assert str(trained_net) == str(torch.jit.script(net))
+
+    cleanup(pnb, net_hash, data_dir)

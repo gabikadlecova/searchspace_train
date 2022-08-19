@@ -18,7 +18,7 @@ from searchspace_train.utils import load_config, print_verbose
 
 class PretrainedNB101(BaseDataset):
     def __init__(self, nasbench: api.NASBench, device: Optional[str] = None, net_data: Optional[pd.DataFrame] = None,
-                 dataset: Union[str, torch.utils.data.DataLoader, None] = None, config: Optional[str, dict] = None,
+                 dataset: Union[str, torch.utils.data.DataLoader, None] = None, config: Union[str, dict, None] = None,
                  verbose: Optional[bool] = True, as_basename: Optional[bool] = False):
 
         self.nasbench = nasbench
