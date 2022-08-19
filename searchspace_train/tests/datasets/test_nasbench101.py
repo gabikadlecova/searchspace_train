@@ -9,7 +9,7 @@ from unittest.mock import mock_open
 
 import torch.jit
 
-from searchspace_train.base import import enumerate_trained_networks
+from searchspace_train.base import enumerate_trained_networks
 from searchspace_train.datasets.nasbench101 import load_nasbench, get_net_from_hash, PretrainedNB101
 from searchspace_train.utils import load_config
 
