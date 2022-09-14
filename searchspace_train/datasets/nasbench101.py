@@ -56,7 +56,10 @@ class PretrainedNB101(BaseDataset):
 
     def train(self, net_hash: str, save_dir: Optional[str] = None):
         ops, adjacency = get_net_from_hash(self.nasbench, net_hash)
-        net = NBNetwork((adjacency, ops))
+
+        args = [(adjacency, ops)]
+        kwargs = self.config.get("model", {})
+        net = NBNetwork(*args, **kwargs)
 
         train_loader, test_loader = self.dataset['train'], self.dataset['test']
         valid_loader = self.dataset.get('validation')
@@ -65,7 +68,7 @@ class PretrainedNB101(BaseDataset):
         save_dir = '.' if save_dir is None else save_dir
 
         def checkpoint_func(n, m, e):
-            return _save_net(save_dir, f"{net_hash}_{e}", n, m)  # checkpoint indexed by epoch num
+            return _save_net(save_dir, f"{net_hash}_{e}", n, m, args, kwargs)  # checkpoint indexed by epoch num
 
         # train
         print_verbose(f"Train network {net_hash}{data_print}.", self.verbose)
@@ -81,7 +84,7 @@ class PretrainedNB101(BaseDataset):
 
         # save network
         print_verbose(f"Saving trained network to directory {save_dir}.", self.verbose)
-        npath, dpath = _save_net(save_dir, net_hash, net, metrics, as_basename=self.as_basename)
+        npath, dpath = _save_net(save_dir, net_hash, net, metrics, args, kwargs, as_basename=self.as_basename)
         self.net_data.loc[net_hash] = {'net_path': npath, 'data_path': dpath}
 
         return net
@@ -93,7 +96,7 @@ class PretrainedNB101(BaseDataset):
         net_path = net_path if dir_path is None else os.path.join(dir_path, net_path)
         data_path = data_path if dir_path is None else os.path.join(dir_path, data_path)
 
-        return TrainedNetwork(net_hash, net_path, data_path)
+        return TrainedNetwork(net_hash, net_path, data_path, load_net)
 
 
 def _get_save_names(save_dir, net_hash):
@@ -102,11 +105,26 @@ def _get_save_names(save_dir, net_hash):
     return net_path, data_path
 
 
-def _save_net(save_dir, net_hash, net, metrics, as_basename=False):
+def load_net(checkpoint_dir, device=None):
+    checkpoint = torch.load(checkpoint_dir, map_location=device)
+    net = NBNetwork(*checkpoint['args'], **checkpoint['kwargs'])
+    net.load_state_dict(checkpoint['model_state_dict'])
+    net.eval()
+
+    return net
+
+
+def _save_net(save_dir, net_hash, net, metrics, net_args, net_kwargs, as_basename=False):
     net_path, data_path = _get_save_names(save_dir, net_hash)
 
-    net = torch.jit.script(net)
-    net.save(net_path)
+    checkpoint_dict = {
+        'hash': net_hash,
+        'model_state_dict': net.state_dict(),
+        'args': net_args,
+        'kwargs': net_kwargs
+    }
+
+    torch.save(checkpoint_dict, net_path)
     torch.save(metrics, data_path)
 
     if as_basename:

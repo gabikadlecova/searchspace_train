@@ -5,16 +5,18 @@ from abc import abstractmethod
 
 
 class TrainedNetwork:
-    def __init__(self, net_hash: str, checkpoint_path: str, data_path: str):
+    def __init__(self, net_hash: str, checkpoint_path: str, data_path: str, load_func):
         self.hash = net_hash
         self.checkpoint_path = checkpoint_path
         self.data_path = data_path
+        self.load_func = load_func
 
     def load_data(self):
         return torch.load(self.data_path)
 
     def load_checkpoint(self, device: Optional[str] = None):
-        return torch.jit.load(self.checkpoint_path, map_location=device)
+        return self.load_func(self.checkpoint_path, device=device)
+
 
 
 class BaseDataset:

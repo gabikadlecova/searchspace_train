@@ -7,10 +7,10 @@ import pytest
 from unittest import mock
 from unittest.mock import mock_open
 
-import torch.jit
+import torch
 
 from searchspace_train.base import enumerate_trained_networks
-from searchspace_train.datasets.nasbench101 import load_nasbench, get_net_from_hash, PretrainedNB101
+from searchspace_train.datasets.nasbench101 import load_nasbench, get_net_from_hash, PretrainedNB101, load_net
 from searchspace_train.utils import load_config
 
 
@@ -79,6 +79,9 @@ def train_net(nb_path, config_path, dataset, net_hash, data_dir, as_basename=Tru
 
 def are_nets_same(pnb, net, net_saved):
     train_data = pnb.dataset['train']
+    net.eval()
+    net_saved.eval()
+
     for batch, _ in train_data:
         out = net(batch)
         out_saved = net_saved(batch)
@@ -109,7 +112,7 @@ def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash,
     assert os.path.exists(data['net_path']), f"Network checkpoint was not saved: {data['net_path']}"
     assert os.path.exists(data['data_path']), f"Training data was not saved: {data['data_path']}"
 
-    net_saved = torch.jit.load(data['net_path'])
+    net_saved = load_net(data['net_path'])
 
     # check saved checkpoint
     assert are_nets_same(pnb, net, net_saved)
@@ -211,6 +214,6 @@ def test_base_enumerate_trained_networks(nb_path, config_path, small_cifar, net_
 
     for enum_hash, trained_net in enumerate_trained_networks(pnb, dir_path=data_dir):
         assert enum_hash == net_hash
-        assert str(trained_net) == str(torch.jit.script(net))
+        assert str(trained_net) == str(net)
 
     cleanup(pnb, net_hash, data_dir)
