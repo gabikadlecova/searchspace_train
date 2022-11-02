@@ -1,7 +1,7 @@
 import os
 
 import pickle
-from typing import Optional, Union, List, Tuple
+from typing import Optional, Union, List, Tuple, Iterable
 
 import numpy as np
 import pandas as pd
@@ -97,6 +97,9 @@ class PretrainedNB101(BaseDataset):
         data_path = data_path if dir_path is None else os.path.join(dir_path, data_path)
 
         return TrainedNetwork(net_hash, net_path, data_path, load_net)
+
+    def enumerate_search_space(self) -> Iterable[str]:
+        return self.nasbench.hash_iterator()
 
 
 def _get_save_names(save_dir, net_hash):

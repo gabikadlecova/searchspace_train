@@ -1,4 +1,4 @@
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Iterable
 
 import torch
 from abc import abstractmethod
@@ -18,7 +18,6 @@ class TrainedNetwork:
         return self.load_func(self.checkpoint_path, device=device)
 
 
-
 class BaseDataset:
     @abstractmethod
     def get_trained_hashes(self) -> List[str]:
@@ -26,6 +25,10 @@ class BaseDataset:
 
     @abstractmethod
     def get_network(self, net_hash: str, dir_path: Optional[str] = None) -> TrainedNetwork:
+        pass
+
+    @abstractmethod
+    def enumerate_search_space(self) -> Iterable[str]:
         pass
 
 
