@@ -28,7 +28,7 @@ class BaseDataset:
         pass
 
     @abstractmethod
-    def enumerate_search_space(self) -> Iterable[str]:
+    def search_space_iterator(self) -> Iterable[str]:
         pass
 
 

@@ -98,7 +98,7 @@ class PretrainedNB101(BaseDataset):
 
         return TrainedNetwork(net_hash, net_path, data_path, load_net)
 
-    def enumerate_search_space(self) -> Iterable[str]:
+    def search_space_iterator(self) -> Iterable[str]:
         return self.nasbench.hash_iterator()
 
 
