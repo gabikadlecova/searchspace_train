@@ -135,6 +135,14 @@ def test_pretrainednb101_train_save(nb_path, config_path, small_cifar, net_hash,
     cleanup(pnb, net_hash, data_dir)
 
 
+def test_pretrainednb101_dataset_training_off(nb_path, config_path):
+    with pytest.raises(ValueError):
+        nb = load_nasbench(nb_path)
+        pnb = PretrainedNB101(nb, config=config_path, dataset=None, verbose=False, training=False)
+        assert pnb.dataset is None and pnb.data_name is None
+        pnb.train('')
+
+
 def test_pretrainednb101_dataset_save(nb_path, config_path, small_cifar, net_hash, data_dir):
     pnb, _ = train_net(nb_path, config_path, small_cifar, net_hash, data_dir)
 

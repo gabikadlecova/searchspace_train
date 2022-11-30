@@ -19,7 +19,7 @@ from searchspace_train.utils import load_config, print_verbose
 class PretrainedNB101(BaseDataset):
     def __init__(self, nasbench: api.NASBench, device: Optional[str] = None, net_data: Optional[pd.DataFrame] = None,
                  dataset: Union[str, torch.utils.data.DataLoader, None] = None, config: Union[str, dict, None] = None,
-                 verbose: Optional[bool] = True, as_basename: Optional[bool] = False):
+                 verbose: Optional[bool] = True, as_basename: Optional[bool] = False, training=True):
 
         self.nasbench = nasbench
         self.device = device
@@ -30,17 +30,23 @@ class PretrainedNB101(BaseDataset):
 
         assert dataset is not None or config is not None, "Must provide either dataset or config."
 
-        if dataset is not None:
-            self.dataset = dataset
-            self.data_name = None
-        else:
-            self.data_name = self.config['dataset']['name'].lower()
-            data_args = self.config['dataset'].get('args', {})
+        self.training = training
 
-            if self.data_name in ['cifar-10', 'cifar_10', 'cifar10', 'cifar']:
-                self.dataset = prepare_dataset(**data_args)
+        if training:
+            if dataset is not None:
+                self.dataset = dataset
+                self.data_name = None
             else:
-                raise ValueError(f"Unknown dataset name: {self.data_name}.")
+                self.data_name = self.config['dataset']['name'].lower()
+                data_args = self.config['dataset'].get('args', {})
+
+                if self.data_name in ['cifar-10', 'cifar_10', 'cifar10', 'cifar']:
+                    self.dataset = prepare_dataset(**data_args)
+                else:
+                    raise ValueError(f"Unknown dataset name: {self.data_name}.")
+        else:
+            self.dataset = None
+            self.data_name = None
 
         self.net_data = pd.DataFrame(columns=['net_path', 'data_path']) if net_data is None else net_data
         self.verbose = verbose
@@ -55,6 +61,10 @@ class PretrainedNB101(BaseDataset):
         return self.net_data.index.tolist()
 
     def train(self, net_hash: str, save_dir: Optional[str] = None):
+        if not self.training:
+            raise ValueError("Networks can't be trained since training_off was set to True when this instance was "
+                             "initialized.")
+
         ops, adjacency = get_net_from_hash(self.nasbench, net_hash)
 
         args = [(adjacency, ops)]
