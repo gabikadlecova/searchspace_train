@@ -28,11 +28,11 @@ class PretrainedNB101(BaseDataset):
         if isinstance(config, str):
             self.config = load_config(config)
 
-        assert dataset is not None or config is not None, "Must provide either dataset or config."
-
         self.training = training
 
         if training:
+            assert dataset is not None or config is not None, "Must provide either dataset or config when training."
+
             if dataset is not None:
                 self.dataset = dataset
                 self.data_name = None
