@@ -1,0 +1,16 @@
+dataset:
+  name: CIFAR-10
+  args:
+    batch_size: 256
+    num_workers: 8
+    num_val_workers: 8
+    random_state: 42
+
+train:
+  num_epochs: 108
+  checkpoint_every_k: 1
+  optimizer: 'rmsprop'
+  print_frequency: 30
+
+checkpoints: [4, 12, 36, 108]
+
