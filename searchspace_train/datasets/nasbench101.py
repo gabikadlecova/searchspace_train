@@ -52,6 +52,7 @@ class PretrainedNB101(BaseDataset):
         self.net_data = pd.DataFrame(columns=['net_path', 'data_path']) if net_data is None else net_data
         self.verbose = verbose
         self.as_basename = as_basename
+        self.checkpoint_epochs = self.config.get("checkpoints", None)
 
     def save_dataset(self, save_path: str):
         print_verbose(f"Saving to {save_path}...", self.verbose)
@@ -79,9 +80,12 @@ class PretrainedNB101(BaseDataset):
         save_dir = '.' if save_dir is None else save_dir
 
         time_zero = time.process_time()
-        
+
         def checkpoint_func(n, m, e):
             # checkpoint indexed by epoch num
+            if self.checkpoint_epochs is not None and e not in self.checkpoint_epochs:
+                return None
+
             return _save_net(save_dir, f"{net_hash}_{e}", n, m, args, kwargs, time_start=time_zero)
 
         # train
