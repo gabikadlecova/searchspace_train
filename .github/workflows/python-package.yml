@@ -30,6 +30,7 @@ jobs:
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         python -m pip install -e git+https://github.com/gabrielasuchopar/nasbench.git#egg=nasbench
+        python -m pip install protobuf==3.19.6
         python -m pip install torch torchvision
         python -m pip install -e .
         python -m pip install coveralls
