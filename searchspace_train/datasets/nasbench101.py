@@ -1,6 +1,7 @@
 import os
 
 import pickle
+import time
 from typing import Optional, Union, List, Tuple, Iterable
 
 import numpy as np
@@ -77,8 +78,11 @@ class PretrainedNB101(BaseDataset):
         data_print = f' on {self.data_name}' if self.data_name is not None else ''
         save_dir = '.' if save_dir is None else save_dir
 
+        time_zero = time.process_time()
+        
         def checkpoint_func(n, m, e):
-            return _save_net(save_dir, f"{net_hash}_{e}", n, m, args, kwargs)  # checkpoint indexed by epoch num
+            # checkpoint indexed by epoch num
+            return _save_net(save_dir, f"{net_hash}_{e}", n, m, args, kwargs, time_start=time_zero)
 
         # train
         print_verbose(f"Train network {net_hash}{data_print}.", self.verbose)
@@ -127,7 +131,7 @@ def load_net(checkpoint_dir, device=None):
     return net
 
 
-def _save_net(save_dir, net_hash, net, metrics, net_args, net_kwargs, as_basename=False):
+def _save_net(save_dir, net_hash, net, metrics, net_args, net_kwargs, as_basename=False, time_start=None):
     net_path, data_path = _get_save_names(save_dir, net_hash)
 
     checkpoint_dict = {
@@ -136,6 +140,8 @@ def _save_net(save_dir, net_hash, net, metrics, net_args, net_kwargs, as_basenam
         'args': net_args,
         'kwargs': net_kwargs
     }
+    if time_start is not None:
+        checkpoint_dict['time'] = time.process_time() - time_start
 
     torch.save(checkpoint_dict, net_path)
     torch.save(metrics, data_path)
