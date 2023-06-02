@@ -2,4 +2,5 @@ click
 nasbench_pytorch
 pandas
 pyyaml
+tensorflow==2.11
 protobuf==3.19.6
