@@ -44,7 +44,7 @@ def get_mock_nasbench(path):
     return "nb"
 
 
-def test_pretrainednb101_init_with_dataset(small_cifar):
+def test_pretrainednb101_init_with_dataset(small_cifar, config_path):
     pnb = PretrainedNB101("nb", dataset=small_cifar)
     assert pnb.dataset is not None
 

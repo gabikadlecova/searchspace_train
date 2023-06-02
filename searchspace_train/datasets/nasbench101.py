@@ -25,7 +25,7 @@ class PretrainedNB101(BaseDataset):
         self.nasbench = nasbench
         self.device = device
 
-        self.config = config if config is not None else None
+        self.config = config if config is not None else {'train': {}}
         if isinstance(config, str):
             self.config = load_config(config)
 
@@ -96,7 +96,7 @@ class PretrainedNB101(BaseDataset):
 
         # evaluate
         print_verbose(f"Test network {net_hash}{data_print}.", self.verbose)
-        loss = self.config['train'].get('loss')
+        loss = self.config['train'].get('loss', None)
         test_metrics = test(net, test_loader, loss=loss, device=self.device)
         metrics.update(test_metrics)
 
