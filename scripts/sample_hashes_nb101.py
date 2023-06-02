@@ -31,7 +31,7 @@ def run(hash_csv, save_dir, prefix, seed, sample_size, nasbench, train_val_split
         from searchspace_train.datasets.nasbench101 import load_nasbench
 
         nb = load_nasbench(nasbench)
-        hashes = pd.DataFrame({'hashes': [h for h in nb.hash_iterator()]})
+        hashes = pd.DataFrame({'hash': [h for h in nb.hash_iterator()]})
 
         train, val = train_test_split(hashes, test_size=sample_size, random_state=seed)
         train.to_csv(os.path.join(save_dir, f"{prefix}train_hashes.csv"))
