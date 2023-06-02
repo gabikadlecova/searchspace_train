@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 @click.option('--hash_csv', default=None)
 @click.option('--save_dir')
 @click.option('--prefix', default='')
-@click.option('--seed', default=None)
+@click.option('--seed', default=None, type=int)
 @click.option('--sample_size', default=0.1, help="Float for size as full size ratio, int for number of sampled nets.")
 @click.option('--nasbench', required=True, help='Path to the nasbench dataset (can be downloaded from '
                                                 'https://github.com/google-research/nasbench#download-the-dataset ).')
