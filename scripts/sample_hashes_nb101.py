@@ -4,8 +4,6 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from searchspace_train.datasets.nasbench101 import load_nasbench
-
 
 @click.command()
 @click.option('--hash_csv', default=None)
@@ -30,6 +28,8 @@ def run(hash_csv, save_dir, prefix, seed, sample_size, nasbench, train_val_split
     prefix = f"{prefix}_" if len(prefix) else prefix
 
     if train_val_split:
+        from searchspace_train.datasets.nasbench101 import load_nasbench
+
         nb = load_nasbench(nasbench)
         hashes = pd.DataFrame({'hashes': [h for h in nb.hash_iterator()]})
 
